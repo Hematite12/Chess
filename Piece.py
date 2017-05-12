@@ -6,6 +6,8 @@ class Piece:
         self.x = x
         self.y = y
         self.c = c
+        self.selected = False
+        self.origPos = None
         self.piece = piece
         self.BB = imgs[0]
         self.BW = imgs[1]
@@ -20,8 +22,24 @@ class Piece:
         self.RB = imgs[10]
         self.RW = imgs[11]
     
+    def setPos(self, x, y):
+        self.x = x
+        self.y = y
+    
+    def select(self):
+        self.selected = True
+        self.origPos = (self.x, self.y)
+    
+    def deselect(self):
+        self.selected = False
+        self.x = self.origPos[0]
+        self.y = self.origPos[1]
+    
     def showImage(self, img):
-        image(img, self.x*CELLDIM+MARGIN, self.y*CELLDIM+MARGIN)
+        if not self.selected:
+            image(img, self.y*CELLDIM+MARGIN, self.x*CELLDIM+MARGIN)
+        else:
+            image(img, self.x-30, self.y-30)
     
     def show(self):
         if self.c == "white":

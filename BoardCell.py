@@ -23,8 +23,8 @@ class BoardCell:
             fill(165, 42, 42)
         else:
             fill(255)
-        rect(self.x*CELLDIM+MARGIN, self.y*CELLDIM+MARGIN, CELLDIM, CELLDIM)
-        if self.piece != None:
+        rect(self.y*CELLDIM+MARGIN, self.x*CELLDIM+MARGIN, CELLDIM, CELLDIM)
+        if self.piece != None and not self.piece.selected:
             self.piece.show()
     
     def getPieceType(self):
