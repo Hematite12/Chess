@@ -34,7 +34,6 @@ def draw():
 
 def mousePressed():
     if b.SELECTED == None:
-        piece = b.checkSelect(mouseX, mouseY)
-        b.SELECTED = piece
+        b.checkSelect(mouseX, mouseY)
     else:
         b.checkDeselect(mouseX, mouseY)

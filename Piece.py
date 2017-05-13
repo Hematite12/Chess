@@ -7,7 +7,7 @@ class Piece:
         self.y = y
         self.c = c
         self.selected = False
-        self.origPos = None
+        self.origPos = (x, y)
         self.piece = piece
         self.BB = imgs[0]
         self.BW = imgs[1]
