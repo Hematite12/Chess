@@ -4,6 +4,7 @@ from Piece import *
 
 class Board:
     def __init__(self, imgs):
+        self.playing = "white"
         self.imgs = imgs
         self.SELECTED = None
         self.matrix = [[None for x in range(8)] for y in range(8)]
@@ -15,6 +16,12 @@ class Board:
             else:
                 self.matrix[x][y] = BoardCell("black", x, y)
         self.placePieces()
+    
+    def changePlayer(self):
+        if self.playing == "white":
+            self.playing = "black"
+        else:
+            self.playing = "white"
     
     def placePieces(self):
         for y in range(len(BOARD)):
@@ -56,8 +63,9 @@ class Board:
             ySquare = (x-MARGIN) // CELLDIM
             xSquare = (y-MARGIN) // CELLDIM
             piece = self.matrix[xSquare][ySquare].piece
-            self.SELECTED = piece
-            if piece != None:
+            if piece != None and piece.c == self.playing:
+                self.matrix[xSquare][ySquare].selected = True
+                self.SELECTED = piece
                 piece.select()
                 self.markMoves(ySquare, xSquare, piece)
     
@@ -67,10 +75,37 @@ class Board:
             ySquare = (x-MARGIN) // CELLDIM
             xSquare = (y-MARGIN) // CELLDIM
             cell = self.matrix[xSquare][ySquare]
-            if cell.attackable or cell.movable:
+            if cell.attackable or cell.movable or cell.castlable:
                 cell.placePiece(self.SELECTED)
                 self.SELECTED.moved = True
                 self.matrix[self.SELECTED.origPos[0]][self.SELECTED.origPos[1]].piece = None
+                self.changePlayer()
+                if cell.castlable:
+                    if cell.y == 6:
+                        if cell.x == 7:
+                            self.matrix[7][5].placePiece(self.matrix[7][7].piece)
+                            self.matrix[7][7].piece.moved = True
+                            self.matrix[7][7].piece = None
+                        else:
+                            self.matrix[0][5].placePiece(self.matrix[0][7].piece)
+                            self.matrix[0][7].piece.moved = True
+                            self.matrix[0][7].piece = None
+                    else:
+                        if cell.x == 7:
+                            self.matrix[7][3].placePiece(self.matrix[7][0].piece)
+                            self.matrix[7][0].piece.moved = True
+                            self.matrix[7][0].piece = None
+                        else:
+                            self.matrix[0][3].placePiece(self.matrix[0][0].piece)
+                            self.matrix[0][0].piece.moved = True
+                            self.matrix[0][0].piece = None
+                if cell.pawnDouble:
+                    cell.enpassantable = 2
+                if self.SELECTED.piece == "pawn" and cell.enpassantAttackable:
+                    if cell.x == 2:
+                        self.matrix[cell.x+1][cell.y].piece = None
+                    elif cell.x == 5:
+                        self.matrix[cell.x-1][cell.y].piece = None
         self.SELECTED = None
         self.unmarkAll()
     
@@ -79,16 +114,31 @@ class Board:
             for y in range(8):
                 self.matrix[x][y].unmark()
     
-    def setPawnMovable(self, x, y):
+    def setMove(self, x, y):
         square = self.matrix[y][x]
         if square.piece == None:
             square.movable = True
     
-    def setPawnAttackable(self, x, y, friendly):
+    def setPawnDouble(self, x, y):
+        square = self.matrix[y][x]
+        if square.piece == None:
+            square.movable = True
+            square.pawnDouble = True
+    
+    def setCastle(self, x, y):
+        square = self.matrix[y][x]
+        square.castlable = True
+    
+    def setAttack(self, x, y, friendly):
         if x>=0 and x<8 and y>=0 and y<8:
             square = self.matrix[y][x]
             if square.piece != None and square.piece.c != friendly:
                 square.attackable = True
+    
+    def setEnpassant(self, x, y, friendly):
+        square = self.matrix[y][x]
+        square.attackable = True
+        square.enpassantAttackable = True
     
     def setAttackMove(self, x, y, friendly):
         square = self.matrix[y][x]
@@ -107,7 +157,9 @@ class Board:
                 ySquare = y+j-yDist
                 if xSquare>=0 and xSquare<8 and ySquare>=0 and ySquare<8:
                     if mat[j][i] == "attack":
-                        self.setAttackMove(x+i-xDist, y+j-yDist, friendly)
+                        self.setAttackMove(xSquare, ySquare, friendly)
+                    if mat[j][i] == "castle":
+                        self.setCastle(xSquare, ySquare)
     
     def applyKnightJump(self, x, y, mat, friendly):
         xDist = len(mat[0]) // 2
@@ -164,17 +216,28 @@ class Board:
         if piece.piece == "pawn":
             if piece.c == "white":
                 if y == 6:
-                    self.setPawnMovable(x, 4)
-                self.setPawnMovable(x, y-1)
-                self.setPawnAttackable(x-1, y-1, "white")
-                self.setPawnAttackable(x+1, y-1, "white")
+                    self.setPawnDouble(x, 4)
+                self.setMove(x, y-1)
+                self.setAttack(x-1, y-1, "white")
+                self.setAttack(x+1, y-1, "white")
+                if y == 3:
+                    if self.matrix[y][x+1].enpassantable == 1:
+                        self.setEnpassant(x+1, 2, "white")
+                    if self.matrix[y][x-1].enpassantable == 1:
+                        self.setEnpassant(x-1, 2, "white")
+                
             elif piece.c == "black":
                 if y == 1:
-                    self.setPawnMovable(x, 3)
-                self.setPawnMovable(x, y+1)
-                self.setPawnAttackable(x+1, y+1, "black")
-                self.setPawnAttackable(x-1, y+1, "black")
-        
+                    self.setPawnDouble(x, 3)
+                self.setMove(x, y+1)
+                self.setAttack(x+1, y+1, "black")
+                self.setAttack(x-1, y+1, "black")
+                if y == 4:
+                    if self.matrix[y][x+1].enpassantable == 1:
+                        self.setEnpassant(x+1, 5, "white")
+                    if self.matrix[y][x-1].enpassantable == 1:
+                        self.setEnpassant(x-1, 5, "white")
+                
         elif piece.piece == "bishop":
             self.applyMovesMat(x, y, BISHOP, piece.c)
         elif piece.piece == "queen":
@@ -184,12 +247,31 @@ class Board:
         elif piece.piece == "knight":
             self.applyKnightJump(x, y, KNIGHT, piece.c)
         elif piece.piece == "king":
-            self.applyMovesMat(x, y, KING, piece.c)
+            mat = KING
+            kingside = False
+            queenside = False
+            if piece.c=="white":
+                col = 7
+            else:
+                col = 0
+            if not piece.moved:
+                if self.matrix[col][5].piece==None and self.matrix[col][6].piece==None:
+                    if self.matrix[col][7].piece!=None and not self.matrix[col][7].piece.moved:
+                        kingside = True
+                if self.matrix[col][3].piece==None and self.matrix[col][2].piece==None:
+                    if self.matrix[col][0].piece!=None and not self.matrix[col][0].piece.moved:
+                        queenside = True
+            if kingside and queenside:
+                mat = KINGCASTLEBOTH
+            elif kingside:
+                mat = KINGCASTLEKING
+            elif queenside:
+                mat = KINGCASTLEQUEEN
+            self.applyMovesMat(x, y, mat, piece.c)
         if piece.piece != "knight":
             self.lineOfSight()
     
     
-
     
     
     

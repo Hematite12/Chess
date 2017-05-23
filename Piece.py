@@ -37,9 +37,9 @@ class Piece:
     
     def showImage(self, img):
         if not self.selected:
-            image(img, self.y*CELLDIM+MARGIN, self.x*CELLDIM+MARGIN)
+            image(img, self.y*CELLDIM+MARGIN, self.x*CELLDIM+MARGIN, CELLDIM, CELLDIM)
         else:
-            image(img, self.x-30, self.y-30)
+            image(img, self.x-30, self.y-30, CELLDIM, CELLDIM)
     
     def show(self):
         if self.c == "white":

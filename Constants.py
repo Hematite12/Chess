@@ -4,13 +4,15 @@ CANVASSIZE = CELLDIM*8+2*MARGIN
 
 BLACK = (165, 42, 42)
 BLACKATTACKABLE = (220, 30, 30)
-BLACKMOVABLE = (130, 40, 100)
-BLACKSELECTED = (30, 220, 30)
+BLACKMOVABLE = (80, 40, 100)
+BLACKSELECTED = (130, 180, 40)
+BLACKCASTLABLE = (130, 40, 160)
 
 WHITE = (255, 255, 255)
 WHITEATTACKABLE = (255, 140, 140)
 WHITEMOVABLE = (180, 180, 255)
 WHITESELECTED = (180, 255, 180)
+WHITECASTLABLE = (255, 180, 255)
 
 BOARD = [["BR","BN","BB","BQ","BK","BB","BN","BR"],
          ["BP","BP","BP","BP","BP","BP","BP","BP"],
@@ -117,3 +119,7 @@ KINGCASTLEKING = [[x, A, A, A, x],
 KINGCASTLEQUEEN = [[x, A, A, A, x],
                    [C, A, S, A, x],
                    [x, A, A, A, x]]
+
+KINGCASTLEBOTH = [[x, A, A, A, x],
+                  [C, A, S, A, C],
+                  [x, A, A, A, x]]

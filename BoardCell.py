@@ -11,6 +11,10 @@ class BoardCell:
         self.attackable = False
         self.visited = False
         self.selected = False
+        self.castlable = False
+        self.enpassantable = 0
+        self.pawnDouble = False
+        self.enpassantAttackable = False
     
     def placePiece(self, piece):
         self.piece = piece
@@ -20,6 +24,12 @@ class BoardCell:
     def unmark(self):
         self.movable = False
         self.attackable = False
+        self.castlable = False
+        self.selected = False
+        self.pawnDouble = False
+        self.enpassantAttackable = False
+        if self.enpassantable > 0:
+            self.enpassantable -= 1
     
     def __repr__(self):
         return self.c
@@ -28,6 +38,10 @@ class BoardCell:
         if self.c == "black":
             if self.attackable:
                 fill(*BLACKATTACKABLE)
+            elif self.castlable:
+                fill(*BLACKCASTLABLE)
+            elif self.selected:
+                fill(*BLACKSELECTED)
             elif self.movable:
                 fill(*BLACKMOVABLE)
             else:
@@ -35,6 +49,10 @@ class BoardCell:
         else:
             if self.attackable:
                 fill(*WHITEATTACKABLE)
+            elif self.castlable:
+                fill(*WHITECASTLABLE)
+            elif self.selected:
+                fill(*WHITESELECTED)
             elif self.movable:
                 fill(*WHITEMOVABLE)
             else:
